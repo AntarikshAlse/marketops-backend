@@ -3,7 +3,7 @@
 # ==========================
 FROM node:26-alpine AS builder
 
-WORKDIR /app
+WORKDIR /src
 
 COPY package*.json ./
 
@@ -20,7 +20,7 @@ RUN pnpm run build
 # ==========================
 FROM node:26-alpine
 
-WORKDIR /app
+WORKDIR /src
 
 # ---------- Build Arguments ----------
 ARG FINNHUB_TOKEN
