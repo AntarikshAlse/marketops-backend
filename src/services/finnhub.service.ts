@@ -5,7 +5,7 @@ export class FinnhubService {
         return new Promise((resolve, reject) => {
             finnhubClient.companyProfile2(
                 { symbol },
-                (error, data) => {
+                (error: any, data: any) => {
                     if (error) reject(error);
                     else resolve(data);
                 }
@@ -18,7 +18,7 @@ export class FinnhubService {
             finnhubClient.companyBasicFinancials(
                 symbol,
                 "all",
-                (error, data) => {
+                (error: any, data: any) => {
                     if (error) reject(error);
                     else resolve(data);
                 }
@@ -38,7 +38,7 @@ export class FinnhubService {
                 symbol,
                 weekAgo.toISOString().slice(0, 10),
                 today.toISOString().slice(0, 10),
-                (error, data) => {
+                (error: any, data: any) => {
                     if (error) reject(error);
                     else resolve(data);
                 }
