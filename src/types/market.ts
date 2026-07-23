@@ -4,19 +4,41 @@ export interface PricePoint {
 }
 
 export interface SymbolState {
+
   symbol: string;
 
-  price: number | null;
+  companyName: string;
 
-  change: number;
+  exchange: string;
 
-  volume: number;
+  sector?: string;
 
-  lastTradeTimestamp: number | null;
+  currentPrice: number;
+
+  previousClose: number;
+
+  absoluteChange: number;
+
+  percentChange: number;
+
+  totalVolume: number;
+
+  tradeCount: number;
+
+  high: number;
+
+  low: number;
+
+  open: number;
+
+  vwap: number;
+
+  lastTradeTimestamp: number;
 
   stale: boolean;
 
   history: PricePoint[];
+
 }
 
 export interface TradeUpdate {

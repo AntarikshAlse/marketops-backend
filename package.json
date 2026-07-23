@@ -10,12 +10,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "dotenv": "^16.6.1",
-    "finnhub": "^2.0.0",
+    "express": "^5.2.1",
+    "finnhub": "^2.0.15",
     "ws": "^8.18.3",
     "zod": "^4.1.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^24.0.0",
     "@types/ws": "^8.18.1",
     "tsx": "^4.20.5",

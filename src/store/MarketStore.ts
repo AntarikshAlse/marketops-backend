@@ -1,73 +1,111 @@
-import { MAX_HISTORY } from '../constants/index.ts';
-import { SymbolState } from '../types/market.ts';
+import { MAX_HISTORY } from "../constants/index.ts";
+import { CircularBuffer } from "../utils/CircularBuffer.ts";
+
+export interface PricePoint {
+    timestamp: number;
+    price: number;
+    volume: number;
+}
+
+export interface SymbolState {
+    symbol: string;
+    companyName?: string;
+    exchange?: string;
+    currentPrice: number | null;
+    previousClose: number | null;
+    absoluteChange: number;
+    percentChange: number;
+    totalVolume: number;
+    tradeCount: number;
+    open: number | null;
+    high: number | null;
+    low: number | null;
+    vwap: number;
+    lastTradeTimestamp: number | null;
+    stale: boolean;
+    history: CircularBuffer<PricePoint>;
+}
 
 export class MarketStore {
-    private readonly market = new Map<string, SymbolState>();
+    private readonly symbols = new Map<string, SymbolState>();
 
-    constructor(symbols: string[]) {
-        for (const symbol of symbols) {
-            this.market.set(symbol, {
+    constructor(watchlist: string[]) {
+        for (const symbol of watchlist) {
+            this.symbols.set(symbol, {
                 symbol,
-                price: null,
-                change: 0,
-                volume: 0,
+                currentPrice: null,
+                previousClose: null,
+                absoluteChange: 0,
+                percentChange: 0,
+                totalVolume: 0,
+                tradeCount: 0,
+                open: null,
+                high: null,
+                low: null,
+                vwap: 0,
                 lastTradeTimestamp: null,
                 stale: false,
-                history: [],
+                history: new CircularBuffer<PricePoint>(
+                    MAX_HISTORY,
+                ),
             });
         }
     }
 
     get(symbol: string) {
-        return this.market.get(symbol);
+        return this.symbols.get(symbol);
     }
 
-    getSnapshot(): Record<string, SymbolState> {
-        return Object.fromEntries(this.market);
+    getAll() {
+        return this.symbols;
     }
 
-    updateTrade(
+    snapshot() {
+        return Object.fromEntries(
+            [...this.symbols.entries()].map(
+                ([symbol, state]) => [
+                    symbol,
+                    {
+                        ...state,
+                        history: state.history.toArray(),
+                    },
+                ],
+            ),
+        );
+    }
+
+    update(symbol: string, update: Partial<SymbolState>) {
+        const state = this.symbols.get(symbol);
+
+        if (!state) return;
+
+        Object.assign(state, update);
+    }
+
+    appendHistory(
         symbol: string,
-        price: number,
-        volume: number,
-        timestamp: number,
+        point: PricePoint,
     ) {
-        const item = this.market.get(symbol);
+        const state = this.symbols.get(symbol);
 
-        if (!item) return;
+        if (!state) return;
 
-        const previous = item.price;
-
-        item.price = price;
-
-        item.change =
-            previous === null ? 0 : Number((price - previous).toFixed(4));
-
-        item.volume += volume;
-
-        item.lastTradeTimestamp = timestamp;
-
-        item.stale = false;
-
-        item.history.push({
-            timestamp,
-            price,
-        });
-
-        if (item.history.length > MAX_HISTORY) {
-            item.history.shift();
-        }
+        state.history.push(point);
     }
 
     markStale(symbol: string) {
-        const item = this.market.get(symbol);
+        const state = this.symbols.get(symbol);
 
-        if (!item) return;
+        if (!state) return;
 
-        item.stale = true;
+        state.stale = true;
     }
 
-    entries() {
-        return this.market.entries();
+    markAlive(symbol: string) {
+        const state = this.symbols.get(symbol);
+
+        if (!state) return;
+
+        state.stale = false;
     }
 }

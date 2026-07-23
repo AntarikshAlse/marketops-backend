@@ -1,16 +1,24 @@
 import WebSocket from 'ws';
+
 import { env } from '../../config/env.ts';
-import { MAX_BACKOFF_MS } from '../../constants/index.ts';
-import { FinnhubMessage } from './FinnhubTypes.ts';
+import type {
+    MarketDataProvider,
+    TradeEvent,
+} from '../BaseProviders.ts';
 
-type TradeListener = (message: FinnhubMessage) => void;
+const MAX_BACKOFF = 30000;
 
-export class FinnhubProvider {
+export class FinnhubProvider
+    implements MarketDataProvider {
     private socket?: WebSocket;
 
     private reconnectAttempt = 0;
 
-    private readonly listeners = new Set<TradeListener>();
+    private symbols: string[] = [];
+
+    private listeners = new Set<
+        (trade: TradeEvent) => void
+    >();
 
     connect() {
         this.socket = new WebSocket(
@@ -20,53 +28,79 @@ export class FinnhubProvider {
         this.socket.on('open', () => {
             this.reconnectAttempt = 0;
 
-            console.log('Connected to Finnhub');
+            this.subscribe(this.symbols);
 
-            for (const symbol of env.symbols) {
-                this.socket?.send(
-                    JSON.stringify({
-                        type: 'subscribe',
-                        symbol,
-                    }),
-                );
-            }
+            console.log('Finnhub Connected');
         });
 
         this.socket.on('message', (raw) => {
-            try {
-                const message = JSON.parse(raw.toString()) as FinnhubMessage;
+            const message = JSON.parse(raw.toString());
 
-                this.listeners.forEach((listener) => listener(message));
-            } catch (error) {
-                console.error(error);
+            if (message.type !== 'trade') return;
+
+            for (const trade of message.data) {
+                const normalized: TradeEvent = {
+                    symbol: trade.s,
+                    price: trade.p,
+                    volume: trade.v,
+                    timestamp: trade.t,
+                };
+
+                this.listeners.forEach((listener) => {
+                    listener(normalized)
+                });
             }
         });
 
         this.socket.on('close', () => {
-            this.scheduleReconnect();
+            this.reconnect();
         });
 
         this.socket.on('error', console.error);
     }
 
-    onMessage(listener: TradeListener) {
+    disconnect() {
+        this.socket?.close();
+    }
+
+    subscribe(symbols: string[]) {
+        this.symbols = symbols;
+
+        if (this.socket?.readyState !== WebSocket.OPEN)
+            return;
+
+        for (const symbol of symbols) {
+            this.socket.send(
+                JSON.stringify({
+                    type: 'subscribe',
+                    symbol,
+                }),
+            );
+        }
+    }
+
+    onTrade(
+        listener: (trade: TradeEvent) => void,
+    ) {
         this.listeners.add(listener);
     }
 
-    private scheduleReconnect() {
+    isConnected() {
+        return (
+            this.socket?.readyState === WebSocket.OPEN
+        );
+    }
+
+    private reconnect() {
         this.reconnectAttempt++;
 
         const delay = Math.min(
             1000 * 2 ** this.reconnectAttempt,
-            MAX_BACKOFF_MS,
+            MAX_BACKOFF,
         );
 
         console.log(`Reconnect in ${delay} ms`);
 
         setTimeout(() => this.connect(), delay);
-    }
-
-    isConnected() {
-        return this.socket?.readyState === WebSocket.OPEN;
     }
 }
