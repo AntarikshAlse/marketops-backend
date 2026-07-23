@@ -1,0 +1,15 @@
+node*modules
+dist
+.git
+.github
+.vscode
+.env
+.env.*
+Dockerfile
+README.md
+coverage
+\_.log
+
+.graphify
+
+architecture\*
