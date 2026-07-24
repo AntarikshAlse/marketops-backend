@@ -6,7 +6,7 @@ FROM node:24-alpine AS base
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
-# Copy dependency configuration files
+# Copy dependency configuration files AND lockfile
 COPY package*.json pnpm-lock.yaml* .npmrc* ./
 
 # Install ALL dependencies (including devDependencies like typescript, esbuild)
@@ -33,11 +33,12 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy only the compiled JavaScript files from the builder stage
+# Copy the compiled JavaScript files from the builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
+# FIXED: Copy the package files AND the pnpm lockfile into the runner stage
+COPY --from=builder /app/package*.json /app/pnpm-lock.yaml* ./
 
-# Direct clean install of ONLY production dependencies to keep the image slim
+# Perform a clean install of ONLY production dependencies
 RUN corepack enable && corepack prepare pnpm@latest --activate && \
     pnpm install --prod --frozen-lockfile --dangerously-allow-all-builds
 
