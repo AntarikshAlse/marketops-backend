@@ -20,6 +20,3 @@ substitutions:
   _REPO_NAME: 'marketops-backend'
   _IMAGE_NAME: 'marketops-backend'
 
-
-# Update your build steps to target the existing repository:
-europe-west1-docker.pkg.dev/project-6ebc5454-f3e6-484f-b13/cloud-run-source-deploy/marketops-backend
