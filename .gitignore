@@ -1,5 +1,6 @@
 .env
 .graphify
 node_modules/
+dist/
 
 architecture

@@ -12,7 +12,7 @@ steps:
     args: ['push', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:latest']
 
   # FIXED Step 3: Explicitly deploy to Cloud Run and clear any command overrides
-  - name: 'gcr.io/://google.com'
+  - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'gcloud'
     args: [
       'run', 'deploy', 'marketops-backend-git',
