@@ -29,11 +29,13 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 # ---------- Build Arguments ----------
+ARG FINNHUB_TOKEN
 ARG SYMBOLS=AAPL,MSFT,NVDA,AMZN,TSLA,BINANCE:BTCUSDT
 ARG PORT=8080
 
 # ---------- Environment Variables ----------
 ENV NODE_ENV=production
+ENV FINNHUB_TOKEN=${FINNHUB_TOKEN}
 ENV SYMBOLS=${SYMBOLS}
 ENV PORT=${PORT}
 
