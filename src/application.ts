@@ -12,15 +12,14 @@ export class Application {
 
     private readonly provider = new FinnhubProvider();
 
-    private readonly realtime = new RealtimeServer(env.port);
-    private readonly rest = new RestServer(env.restPort);
+    private readonly rest = new RestServer(); // Port argument removed from constructor
+    private readonly realtime = new RealtimeServer(this.rest.getHttpServer()); // Attach directly to Express server reference
 
     private flushTimer?: NodeJS.Timeout;
-
     private heartbeatTimer?: NodeJS.Timeout;
 
     start() {
-        this.rest.start();
+        this.rest.start(env.port);
         this.provider.subscribe(env.symbols);
         this.realtime.onConnection((client) => {
             client.send(

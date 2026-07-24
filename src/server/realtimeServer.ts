@@ -1,3 +1,4 @@
+import http from 'http';
 import WebSocket, { WebSocketServer } from 'ws';
 
 export interface PendingUpdate {
@@ -10,17 +11,13 @@ export interface PendingUpdate {
 
 export class RealtimeServer {
     private readonly wss: WebSocketServer;
-
     private readonly clients = new Set<WebSocket>();
+    private readonly pending = new Map<string, PendingUpdate>();
 
-    private readonly pending = new Map<
-        string,
-        PendingUpdate
-    >();
-
-    constructor(port: number) {
+    // Accept a shared server instance instead of an independent port
+    constructor(server: http.Server) {
         this.wss = new WebSocketServer({
-            port,
+            server, // This links WS protocol upgrades to your Express port listener
         });
 
         this.wss.on('connection', (client) => {
@@ -32,13 +29,12 @@ export class RealtimeServer {
         });
     }
 
-    onConnection(
-        callback: (client: WebSocket) => void,
-    ) {
+    onConnection(callback: (client: WebSocket) => void) {
         this.wss.on('connection', (client) => {
             callback(client);
         });
     }
+
     queue(update: PendingUpdate) {
         this.pending.set(update.symbol, update);
     }
@@ -74,9 +70,7 @@ export class RealtimeServer {
         for (const client of this.clients) {
             client.close();
         }
-
         this.clients.clear();
-
         this.wss.close();
     }
 }
