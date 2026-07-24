@@ -1,9 +1,9 @@
-import { env } from "./config/env.ts";
-import { FinnhubProvider } from "./providers/finnhub/FinnhubProvider.ts";
-import { RealtimeServer } from "./server/realtimeServer.ts";
-import { AnalyticsService } from "./services/AnalyticsService.ts";
-import { MarketStore } from "./store/MarketStore.ts";
-import { RestServer } from "./server/restServer.ts";
+import { env } from "./config/env.js";
+import { FinnhubProvider } from "./providers/finnhub/FinnhubProvider.js";
+import { RealtimeServer } from "./server/realtimeServer.js";
+import { AnalyticsService } from "./services/AnalyticsService.js";
+import { MarketStore } from "./store/MarketStore.js";
+import { RestServer } from "./server/restServer.js";
 
 export class Application {
     private readonly store = new MarketStore(env.symbols);

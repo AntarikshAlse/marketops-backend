@@ -1,5 +1,5 @@
-import { MAX_HISTORY } from "../constants/index.ts";
-import { CircularBuffer } from "../utils/CircularBuffer.ts";
+import { MAX_HISTORY } from "../constants/index.js";
+import { CircularBuffer } from "../utils/CircularBuffer.js";
 
 export interface PricePoint {
     timestamp: number;

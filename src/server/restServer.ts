@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 
-import { metricsRoute } from "../routes/metrics.ts";
-import { newsRoute } from "../routes/news.ts";
-import { profileRoute } from "../routes/profile.ts";
+import { metricsRoute } from "../routes/metrics.js";
+import { newsRoute } from "../routes/news.js";
+import { profileRoute } from "../routes/profile.js";
 
 export class RestServer {
     private readonly app = express();

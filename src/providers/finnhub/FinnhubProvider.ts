@@ -1,10 +1,10 @@
 import WebSocket from 'ws';
 
-import { env } from '../../config/env.ts';
+import { env } from '../../config/env.js';
 import type {
     MarketDataProvider,
     TradeEvent,
-} from '../BaseProviders.ts';
+} from '../BaseProviders.js';
 
 const MAX_BACKOFF = 30000;
 

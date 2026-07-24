@@ -1,4 +1,4 @@
-import type { PricePoint, SymbolState } from "../store/MarketStore.ts";
+import type { PricePoint, SymbolState } from "../store/MarketStore.js";
 
 export interface TradeEvent {
     symbol: string;

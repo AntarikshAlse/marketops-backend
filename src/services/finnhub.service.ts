@@ -1,4 +1,4 @@
-import { finnhubClient } from "../lib/finnhub.ts";
+import { finnhubClient } from "../lib/finnhub.js";
 
 export class FinnhubService {
     async getProfile(symbol: string) {

@@ -3,7 +3,7 @@ import type {
     Response,
 } from "express";
 
-import { finnhubService } from "../services/finnhub.service.ts";
+import { finnhubService } from "../services/finnhub.service.js";
 
 export async function newsRoute(
     req: Request,

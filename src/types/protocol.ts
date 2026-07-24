@@ -6,7 +6,7 @@ export type MessageType =
     | 'stale'
     | 'heartbeat'
     | 'system'
-    | 'error.ts';
+    | 'error';
 
 export interface ServerMessage<T> {
     version: typeof PROTOCOL_VERSION;

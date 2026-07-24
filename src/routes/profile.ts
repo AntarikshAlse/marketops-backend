@@ -2,7 +2,7 @@ import type {
     Request,
     Response,
 } from "express";
-import { finnhubService } from "../services/finnhub.service.ts";
+import { finnhubService } from "../services/finnhub.service.js";
 
 
 export async function profileRoute(

@@ -4,10 +4,10 @@ export type EventType =
     | 'stale'
     | 'heartbeat'
     | 'connection'
-    | 'error.ts';
+    | 'error';
 
 export interface WSMessage<T> {
-    version: '1.0.ts';
+    version: '1.0.0';
 
     sequence: number;
 

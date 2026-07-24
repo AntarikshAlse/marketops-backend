@@ -1,4 +1,4 @@
-import { PROTOCOL_VERSION, ServerMessage } from '../types/protocol.ts';
+import { PROTOCOL_VERSION, ServerMessage } from '../types/protocol.js';
 
 let sequence = 0;
 
