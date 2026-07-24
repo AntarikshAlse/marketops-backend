@@ -28,13 +28,7 @@ RUN pnpm prune --prod
 FROM node:24-alpine
 WORKDIR /app
 
-# Non-sensitive configuration fallback defaults are safe to keep here
-ARG SYMBOLS=AAPL,MSFT,NVDA,AMZN,TSLA,BINANCE:BTCUSDT
-ARG PORT=8080
-
 ENV NODE_ENV=production
-ENV SYMBOLS=${SYMBOLS}
-ENV PORT=${PORT}
 
 # REMOVED: FINNHUB_TOKEN ARG and ENV blocks are completely gone
 
