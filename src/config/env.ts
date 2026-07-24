@@ -9,7 +9,6 @@ if (!token) {
 export const env = {
     finnhubToken: token,
     port: Number(process.env.PORT ?? 8080),
-    restPort: Number(process.env.REST_PORT ?? 8081),
     symbols: (process.env.SYMBOLS ??
         'AAPL,MSFT,BINANCE:BTCUSDT')
         .split(',')
