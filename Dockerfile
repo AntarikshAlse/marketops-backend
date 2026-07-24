@@ -1,40 +1,48 @@
 # ==========================
-# Stage 1 - Build
+# Stage 1 - Base (Install everything needed to build)
 # ==========================
-FROM node:24-alpine AS builder
+FROM node:24-alpine AS base
 
-# Enable corepack to use pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
-
 WORKDIR /app
 
-# Copy all configuration and lockfiles over
-COPY package*.json pnpm-lock.yaml* .npmrc* pnpm-workspace.yaml* ./
+# Copy dependency configuration files
+COPY package*.json pnpm-lock.yaml* .npmrc* ./
 
-# FIXED: Explicitly force pnpm to allow esbuild scripts directly via CLI
-RUN pnpm install --dangerously-allow-all-builds
+# Install ALL dependencies (including devDependencies like typescript, esbuild)
+RUN pnpm install --frozen-lockfile --dangerously-allow-all-builds
 
+# ==========================
+# Stage 2 - Build
+# ==========================
+FROM base AS builder
+WORKDIR /app
+
+# Copy the rest of your application source code
 COPY tsconfig.json ./
 COPY src ./src
 
+# Compile the TypeScript files into your /app/dist directory
 RUN pnpm run build
-RUN pnpm prune --prod
-
-
 
 # ==========================
-# Stage 2 - Production
+# Stage 3 - Production Runtime
 # ==========================
-FROM node:24-alpine
+FROM node:24-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# REMOVED: FINNHUB_TOKEN ARG and ENV blocks are completely gone
-
+# Copy only the compiled JavaScript files from the builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY package*.json ./
+COPY --from=builder /app/package*.json ./
 
-EXPOSE ${PORT}
+# Direct clean install of ONLY production dependencies to keep the image slim
+RUN corepack enable && corepack prepare pnpm@latest --activate && \
+    pnpm install --prod --frozen-lockfile --dangerously-allow-all-builds
+
+# Expose port documentation for Cloud Run
+EXPOSE 8080
+
+# Execute the runtime script safely
 CMD ["node", "dist/index.js"]
