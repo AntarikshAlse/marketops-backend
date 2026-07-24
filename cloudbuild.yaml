@@ -17,6 +17,6 @@ options:
 
 substitutions:
   _REGION: 'europe-west1'
-  _REPO_NAME: 'antarikshalse/marketops-backend'
+  _REPO_NAME: 'cloud-run-source-deploy'
   _IMAGE_NAME: 'marketops-backend'
 
