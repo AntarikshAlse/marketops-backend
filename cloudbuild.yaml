@@ -1,5 +1,5 @@
 steps:
-  # Step 1: Build the Docker image using your multi-stage Dockerfile
+  # Step 1: Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build', 
@@ -11,7 +11,17 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:latest']
 
-# This options block directly satisfies rule (c) from your platform error code
+  # FIXED Step 3: Explicitly deploy to Cloud Run and clear any command overrides
+  - name: 'gcr.io/://google.com'
+    entrypoint: 'gcloud'
+    args: [
+      'run', 'deploy', 'marketops-backend-git',
+      '--image', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:latest',
+      '--region', '$_REGION',
+      '--clear-command',  # Force Cloud Run to drop the broken "index.js" string
+      '--clear-args'      # Force Cloud Run to fall back to your Dockerfile CMD
+    ]
+
 options:
   logging: 'CLOUD_LOGGING_ONLY'
 
@@ -19,4 +29,3 @@ substitutions:
   _REGION: 'europe-west1'
   _REPO_NAME: 'cloud-run-source-deploy'
   _IMAGE_NAME: 'marketops-backend'
-
