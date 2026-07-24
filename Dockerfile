@@ -1,30 +1,32 @@
-# ========================== dockerfile ==========================
+# ==========================
 # Stage 1 - Build
 # ==========================
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
-WORKDIR /workspace
+# Enable corepack to use pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy dependency configuration files
-COPY package*.json ./
+WORKDIR /app
 
-# Install all development and production dependencies for building
-RUN npm ci
+COPY package*.json pnpm-lock.yaml* ./
 
-# Copy configuration and local source code files
+RUN pnpm install --frozen-lockfile
+
 COPY tsconfig.json ./
 COPY src ./src
 
-# Runs 'tsc' to compile TypeScript into Javascript
-RUN npm run build
+RUN pnpm run build
 
 
 # ==========================
 # Stage 2 - Production
 # ==========================
-FROM node:22-alpine
+FROM node:24-alpine
 
-WORKDIR /workspace
+# Enable corepack to use pnpm in production stage
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
 
 # ---------- Build Arguments ----------
 ARG FINNHUB_TOKEN
@@ -37,17 +39,15 @@ ENV FINNHUB_TOKEN=${FINNHUB_TOKEN}
 ENV SYMBOLS=${SYMBOLS}
 ENV PORT=${PORT}
 
-# Copy package configurations for production setup
-COPY package*.json ./
+COPY package*.json pnpm-lock.yaml* ./
 
-# Install strictly production dependencies to keep the image lightweight
-RUN npm ci --only=production
+# Install only production dependencies
+RUN pnpm install --prod --frozen-lockfile
 
-# Copy the compiled JavaScript files from the builder stage
-COPY --from=builder /workspace/dist ./dist
+# Corrected source path from "/app/dist"
+COPY --from=builder /app/dist ./dist
 
-# Document target port for Google Cloud Run
+# Cloud Run injects PORT automatically, but we expose it for local testing
 EXPOSE ${PORT}
 
-# Uses 'node dist/index.js' as defined in your package.json start script
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
