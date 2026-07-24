@@ -1,0 +1,21 @@
+steps:
+  # Step 1: Build the Docker image using your multi-stage Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build', 
+      '-t', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:latest', 
+      '.'
+    ]
+
+  # Step 2: Push the completed image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:latest']
+
+# This options block directly satisfies rule (c) from your platform error code
+options:
+  logging: 'CLOUD_LOGGING_ONLY'
+
+substitutions:
+  _REGION: 'us-central1'
+  _REPO_NAME: 'marketops'
+  _IMAGE_NAME: 'marketops-backend'
