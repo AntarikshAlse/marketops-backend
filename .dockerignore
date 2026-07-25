@@ -1,4 +1,4 @@
-node*modules
+node_modules
 dist
 .git
 .github
@@ -8,8 +8,6 @@ dist
 Dockerfile
 README.md
 coverage
-\_.log
-
+*.log
 .graphify
-
-architecture\*
+architecture*

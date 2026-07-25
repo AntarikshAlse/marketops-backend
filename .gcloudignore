@@ -1,0 +1,21 @@
+# Copyright 2026 MarketOps. All rights reserved.
+#
+# This file specifies files that should NOT be uploaded to Google Cloud
+# Build's staging bucket. Only source files needed for the Docker build
+# should be included.
+
+.gcloudignore
+.git
+.gitignore
+.github
+.vscode
+node_modules
+dist
+.env
+.env.*
+*.log
+coverage
+repomix-output.md
+repomix-output.xml
+folder_structure.md
+stock trades/

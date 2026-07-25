@@ -7,7 +7,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 # Copy dependency configuration files AND lockfile
-COPY package*.json pnpm-lock.yaml* .npmrc* ./
+COPY package*.json pnpm-lock.yaml .npmrc ./
 
 # Install ALL dependencies (including devDependencies like typescript, esbuild)
 RUN pnpm install --frozen-lockfile --dangerously-allow-all-builds
@@ -35,12 +35,12 @@ ENV NODE_ENV=production
 
 # Copy the compiled JavaScript files from the builder stage
 COPY --from=builder /app/dist ./dist
-# FIXED: Copy the package files AND the pnpm lockfile into the runner stage
-COPY --from=builder /app/package*.json /app/pnpm-lock.yaml* ./
+# Copy the package files AND the pnpm lockfile into the runner stage
+COPY --from=builder /app/package*.json /app/pnpm-lock.yaml ./
 
 # Perform a clean install of ONLY production dependencies
 RUN corepack enable && corepack prepare pnpm@latest --activate && \
-    pnpm install --prod --frozen-lockfile --dangerously-allow-all-builds
+    pnpm install --prod --frozen-lockfile
 
 # Expose port documentation for Cloud Run
 EXPOSE 8080

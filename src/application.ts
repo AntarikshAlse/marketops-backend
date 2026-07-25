@@ -13,24 +13,24 @@ export class Application {
     private readonly provider = new FinnhubProvider();
 
     private readonly rest = new RestServer(); // Port argument removed from constructor
-    // private readonly realtime = new RealtimeServer(this.rest.getHttpServer()); // Attach directly to Express server reference
+    private readonly realtime = new RealtimeServer(this.rest.getHttpServer()); // Attach directly to Express server reference
 
     private flushTimer?: NodeJS.Timeout;
     private heartbeatTimer?: NodeJS.Timeout;
 
     start() {
         this.rest.start(env.port);
-        // this.provider.subscribe(env.symbols);
-        // this.realtime.onConnection((client) => {
-        //     client.send(
-        //         JSON.stringify({
-        //             type: "snapshot",
-        //             payload: {
-        //                 symbols: this.store.snapshot(),
-        //             },
-        //         }),
-        //     );
-        // });
+        this.provider.subscribe(env.symbols);
+        this.realtime.onConnection((client) => {
+            client.send(
+                JSON.stringify({
+                    type: "snapshot",
+                    payload: {
+                        symbols: this.store.snapshot(),
+                    },
+                }),
+            );
+        });
         this.provider.onTrade((trade) => {
             const state = this.store.get(trade.symbol);
 
@@ -60,34 +60,34 @@ export class Application {
                 analytics.historyPoint,
             );
 
-            // this.realtime.queue({
-            //     symbol: trade.symbol,
-            //     price: analytics.currentPrice,
-            //     change: analytics.absoluteChange,
-            //     volume: analytics.totalVolume,
-            //     lastTradeTimestamp:
-            //         analytics.lastTradeTimestamp,
-            // });
+            this.realtime.queue({
+                symbol: trade.symbol,
+                price: analytics.currentPrice,
+                change: analytics.absoluteChange,
+                volume: analytics.totalVolume,
+                lastTradeTimestamp:
+                    analytics.lastTradeTimestamp,
+            });
         });
 
-        // this.flushTimer = setInterval(() => {
-        //     this.realtime.flush();
-        // }, 300);
+        this.flushTimer = setInterval(() => {
+            this.realtime.flush();
+        }, 300);
 
-        // this.heartbeatTimer = setInterval(() => {
-        //     this.realtime.broadcast({
-        //         type: 'heartbeat',
-        //         payload: {
-        //             timestamp: Date.now(),
-        //             connectedClients:
-        //                 this.realtime.clientCount(),
-        //             providerConnected:
-        //                 this.provider.isConnected(),
-        //         },
-        //     });
-        // }, 5000);
+        this.heartbeatTimer = setInterval(() => {
+            this.realtime.broadcast({
+                type: 'heartbeat',
+                payload: {
+                    timestamp: Date.now(),
+                    connectedClients:
+                        this.realtime.clientCount(),
+                    providerConnected:
+                        this.provider.isConnected(),
+                },
+            });
+        }, 5000);
 
-        // this.provider.connect();
+        this.provider.connect();
 
         console.log(
             ` MarketOps Backend listening on ${env.port}`,
@@ -105,9 +105,9 @@ export class Application {
 
         this.rest.stop();
 
-        // this.provider.disconnect();
+        this.provider.disconnect();
 
-        // this.realtime.close();
+        this.realtime.close();
 
         console.log('MarketOps Backend stopped.');
     }
