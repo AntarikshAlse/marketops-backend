@@ -14,6 +14,8 @@ export class FinnhubProvider
 
     private reconnectAttempt = 0;
 
+    private manuallyDisconnected = false;
+
     private symbols: string[] = [];
 
     private listeners = new Set<
@@ -21,6 +23,12 @@ export class FinnhubProvider
     >();
 
     connect() {
+        if (this.socket?.readyState === WebSocket.OPEN || this.socket?.readyState === WebSocket.CONNECTING) {
+            console.log('FinnhubProvider already connected or connecting — skipping');
+            return;
+        }
+
+        this.manuallyDisconnected = false;
         this.socket = new WebSocket(
             `wss://ws.finnhub.io?token=${env.finnhubToken}`,
         );
@@ -60,6 +68,7 @@ export class FinnhubProvider
     }
 
     disconnect() {
+        this.manuallyDisconnected = true;
         this.socket?.close();
     }
 
@@ -91,7 +100,15 @@ export class FinnhubProvider
         );
     }
 
+    isConnecting() {
+        return (
+            this.socket?.readyState === WebSocket.CONNECTING
+        );
+    }
+
     private reconnect() {
+        if (this.manuallyDisconnected) return;
+
         this.reconnectAttempt++;
 
         const delay = Math.min(

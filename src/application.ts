@@ -21,6 +21,8 @@ export class Application {
     start() {
         this.rest.start(env.port);
         this.provider.subscribe(env.symbols);
+
+        // Send snapshot to new clients immediately
         this.realtime.onConnection((client) => {
             client.send(
                 JSON.stringify({
@@ -30,6 +32,29 @@ export class Application {
                     },
                 }),
             );
+        });
+
+        // Connect/disconnect Finnhub provider based on client presence
+        this.realtime.onClientCountChange({
+            onFirstClient: () => {
+                if (!this.provider.isConnected()) {
+                    console.log('Frontend connected — starting Finnhub provider');
+                    this.provider.connect();
+                    for (const symbol of env.symbols) {
+                        this.store.markAlive(symbol);
+                    }
+                }
+            },
+            onLastClientGone: () => {
+                if (this.provider.isConnected() || this.provider.isConnecting()) {
+                    console.log('No frontend clients — stopping Finnhub provider');
+                    this.provider.disconnect();
+                    // Mark all symbols as stale so clients know data is outdated
+                    for (const symbol of env.symbols) {
+                        this.store.markStale(symbol);
+                    }
+                }
+            },
         });
         this.provider.onTrade((trade) => {
             const state = this.store.get(trade.symbol);
@@ -87,7 +112,8 @@ export class Application {
             });
         }, 5000);
 
-        this.provider.connect();
+        // Provider starts disconnected — it will connect when the first client arrives
+        console.log('Finnhub provider idle (will start when a client connects)');
 
         console.log(
             ` MarketOps Backend listening on ${env.port}`,

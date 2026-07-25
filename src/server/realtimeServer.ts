@@ -13,6 +13,8 @@ export class RealtimeServer {
     private readonly wss: WebSocketServer;
     private readonly clients = new Set<WebSocket>();
     private readonly pending = new Map<string, PendingUpdate>();
+    private onFirstClient: (() => void) | null = null;
+    private onLastClientGone: (() => void) | null = null;
 
     // Accept a shared server instance instead of an independent port
     constructor(server: http.Server) {
@@ -21,10 +23,18 @@ export class RealtimeServer {
         });
 
         this.wss.on('connection', (client) => {
+            const wasEmpty = this.clients.size === 0;
             this.clients.add(client);
+
+            if (wasEmpty && this.onFirstClient !== null) {
+                this.onFirstClient();
+            }
 
             client.on('close', () => {
                 this.clients.delete(client);
+                if (this.clients.size === 0 && this.onLastClientGone !== null) {
+                    this.onLastClientGone();
+                }
             });
         });
     }
@@ -33,6 +43,11 @@ export class RealtimeServer {
         this.wss.on('connection', (client) => {
             callback(client);
         });
+    }
+
+    onClientCountChange(callbacks: { onFirstClient?: () => void; onLastClientGone?: () => void }) {
+        this.onFirstClient = callbacks.onFirstClient ?? null;
+        this.onLastClientGone = callbacks.onLastClientGone ?? null;
     }
 
     queue(update: PendingUpdate) {

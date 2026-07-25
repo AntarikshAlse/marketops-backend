@@ -16,4 +16,5 @@ export interface MarketDataProvider {
     ): void;
 
     isConnected(): boolean;
+    isConnecting(): boolean;
 }
