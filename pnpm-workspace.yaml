@@ -1,4 +1,5 @@
-# No allowedBuiltDependencies needed — Docker build uses --dangerously-allow-all-builds
-
 allowBuilds:
   esbuild: set this to true or false
+# Docker build uses --dangerously-allow-all-builds; this config is for local dev only
+onlyBuiltDependencies:
+  - esbuild
