@@ -11,11 +11,7 @@ export class RestServer {
     private readonly server: http.Server; // Explicitly manage the server instance
 
     constructor() {
-        this.app.use(
-            cors({
-                origin: "http://localhost:5173",
-            }),
-        );
+        this.app.use(cors());
 
         this.app.use(express.json());
 
